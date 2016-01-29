@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn._2vin.admin.log.persistence.LogMapper">
+
+	<!-- 定义结果集 -->
+	<resultMap id="logResultMap" autoMapping="true" type="cn._2vin.admin.bean.LogBean">
+		<result property="id" column="id" jdbcType="VARCHAR"/>
+		<result property="title" column="title" jdbcType="VARCHAR"/>
+		<result property="action" column="action" jdbcType="VARCHAR"/>
+		<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	<insert id="insertLog" parameterType="cn._2vin.admin.bean.LogBean">
+	   insert into sys_operator_log(title,action) values (#{title, jdbcType=VARCHAR},#{action, jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="selectPageLog" parameterType="cn._2vin.admin.bean.LogBean" resultMap="logResultMap">
+	    SELECT * FROM sys_operator_log t where 1=1 
+	    <if test="action !=null and action != '' ">
+	    	and (t.title like '%${action}%' or t.action like '%${action}%')
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+	    order by t.crtdate desc,title
+	    <include refid="cn._2vin.common.page.persistence.NumberMapper.Pageing" />	  
+	</select>
+	<select id="countPageLog" parameterType="cn._2vin.admin.bean.LogBean" resultType="int">
+        select count(1) from(
+	        SELECT id FROM sys_operator_log t where 1=1 
+		    <if test="action !=null and action != '' ">
+		    	and (t.title like '%${action}%' or t.action like '%${action}%')
+		    </if>
+		    <if test="firstTime !=null and firstTime != '' ">
+		    	and crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+		    </if>
+		    <if test="lastTime !=null and lastTime != '' ">
+		    	<![CDATA[and crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+		    </if>
+        ) t
+	</select>
+	
+</mapper>

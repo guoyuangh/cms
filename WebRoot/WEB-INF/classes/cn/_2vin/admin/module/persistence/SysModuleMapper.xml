@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn._2vin.admin.module.persistence.SysModuleMapper">
+<!--包含父和子的 定义结果集 -->
+	<resultMap id="AllResultMap" type="cn._2vin.admin.bean.SysModule">
+  	<id property="moduleId" column="MODULE_ID" jdbcType="VARCHAR"/>
+  	<result property="moduleName" column="MODULE_NAME" jdbcType="VARCHAR"/>
+	<result property="moduleUrl" column="MODULE_URL" jdbcType="VARCHAR"/>
+	<result property="targetString" column="TARGET" jdbcType="VARCHAR"/>
+	<result property="treeCode" column="TREE_CODE" jdbcType="VARCHAR"/>
+	<result property="rightCode" column="RIGHT_CODE" jdbcType="VARCHAR"/>
+	<result property="seqNum" column="seq_num" jdbcType="NUMERIC"/>
+	<result property="remark" column="REMARK" jdbcType="VARCHAR"/>
+	<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+	<result property="parentModuleId" column="PARENT_MODULE_ID" jdbcType="VARCHAR"/>
+	<association  property="parentSysModule" column="PARENT_MODULE_ID" javaType="cn._2vin.admin.bean.SysModule" 
+  		select="getSysModuleByParentModuleId" />
+  	<collection property="children" column="MODULE_ID" ofType="cn._2vin.admin.bean.SysModule" 
+  		select="getChildrenSysModulesByModuleId"/>
+  </resultMap>
+  <!--只包含子的 定义结果集 -->
+	<resultMap id="baseResultMap" type="cn._2vin.admin.bean.SysModule">
+  	<id property="moduleId" column="MODULE_ID" jdbcType="VARCHAR"/>
+  	<result property="moduleName" column="MODULE_NAME" jdbcType="VARCHAR"/>
+	<result property="moduleUrl" column="MODULE_URL" jdbcType="VARCHAR"/>
+	<result property="targetString" column="TARGET" jdbcType="VARCHAR"/>
+	<result property="treeCode" column="TREE_CODE" jdbcType="VARCHAR"/>
+	<result property="rightCode" column="RIGHT_CODE" jdbcType="VARCHAR"/>
+	<result property="seqNum" column="seq_num" jdbcType="NUMERIC"/>
+	<result property="remark" column="REMARK" jdbcType="VARCHAR"/>
+	<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+	<result property="parentModuleId" column="PARENT_MODULE_ID" jdbcType="VARCHAR"/>
+  	<collection property="children" column="MODULE_ID" ofType="cn._2vin.admin.bean.SysModule" 
+  		select="getChildrenSysModulesByModuleId"/>
+  </resultMap>
+  <!--只包含父的 定义结果集 -->
+  <resultMap id="SysModuleMap" type="cn._2vin.admin.bean.SysModule">
+  	<id property="moduleId" column="MODULE_ID" jdbcType="VARCHAR"/>
+  	<result property="moduleName" column="MODULE_NAME" jdbcType="VARCHAR"/>
+	<result property="moduleUrl" column="MODULE_URL" jdbcType="VARCHAR"/>
+	<result property="targetString" column="TARGET" jdbcType="VARCHAR"/>
+	<result property="treeCode" column="TREE_CODE" jdbcType="VARCHAR"/>
+	<result property="rightCode" column="RIGHT_CODE" jdbcType="VARCHAR"/>
+	<result property="seqNum" column="seq_num" jdbcType="NUMERIC"/>
+	<result property="remark" column="REMARK" jdbcType="VARCHAR"/>
+	<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+	<result property="parentModuleId" column="PARENT_MODULE_ID" jdbcType="VARCHAR"/>
+	<association  property="parentSysModule" column="PARENT_MODULE_ID" javaType="cn._2vin.admin.bean.SysModule" 
+  		select="getSysModuleByParentModuleId" />
+  </resultMap>
+	
+  	<delete id="delete" parameterType="string">
+  		delete from sys_module where module_id=#{moduleId, jdbcType=VARCHAR}
+  	</delete>
+  	
+	<select id="selectPageSysModule" parameterType="cn._2vin.admin.bean.SysModule" resultMap="baseResultMap">
+	    SELECT * from sys_module t where parent_module_id=0 
+	    <if test="moduleName !=null and moduleName != '' ">
+	    	and t.module_name like '%${moduleName}%'
+	    </if>
+	    <if test="moduleUrl !=null and moduleUrl != '' ">
+	    	and t.module_url like '%${moduleUrl}%'
+	    </if>
+	     <if test="targetString !=null and targetString != '' ">
+	    	and t.target like '%${targetString}%'
+	    </if>
+	    <if test="rightCode !=null and rightCode != '' ">
+	    	and t.right_code like '%${rightCode}%'
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+	    order by t.seq_num 
+	    <include refid="cn._2vin.common.page.persistence.NumberMapper.Pageing" />	  
+	</select>
+	<select id="countPageSysModule" parameterType="cn._2vin.admin.bean.SysModule" resultType="int">
+        select count(1) from(
+	        SELECT module_id from sys_module t where  parent_module_id=0
+	    <if test="moduleName !=null and moduleName != '' ">
+	    	and t.module_name like '%${moduleName}%'
+	    </if>
+	    <if test="moduleUrl !=null and moduleUrl != '' ">
+	    	and t.module_url like '%${moduleUrl}%'
+	    </if>
+	     <if test="targetString !=null and targetString != '' ">
+	    	and t.target like '%${targetString}%'
+	    </if>
+	    <if test="rightCode !=null and rightCode != '' ">
+	    	and t.right_code like '%${rightCode}%'
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+        ) t
+	</select>
+	<select id="queryPrimaryKey" resultMap="AllResultMap" parameterType="java.lang.String">
+		select * from sys_module where module_id= #{moduleId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectByNameExcludeId"  resultType="int" parameterType="java.util.Map">
+		select count(1) from sys_module where module_name = #{moduleName, jdbcType=VARCHAR}
+		<if test="moduleId != null and moduleId != '' ">
+		 and module_id <![CDATA[<>]]> #{moduleId, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="cn._2vin.admin.bean.SysModule">
+		insert into sys_module (module_name,module_url,target,parent_module_id,right_code,seq_num,remark,arcdate) 
+		values(#{moduleName, jdbcType=VARCHAR},#{moduleUrl, jdbcType=VARCHAR},#{targetString, jdbcType=VARCHAR},#{parentModuleId, jdbcType=VARCHAR},#{rightCode, jdbcType=VARCHAR},#{seqNum, jdbcType=NUMERIC},#{remark, jdbcType=VARCHAR},now())
+	</insert>
+	
+	<update id="update" parameterType="cn._2vin.admin.bean.SysModule">
+		update sys_module 
+		<set>
+			arcdate = NOW(),
+			<if test="moduleName !=null and moduleName != '' ">
+	    	module_name = #{moduleName, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="moduleUrl !=null and moduleUrl != '' ">
+	    	module_url = #{moduleUrl, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="targetString !=null and targetString != '' ">
+	    	target = #{targetString, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="rightCode !=null and rightCode != '' ">
+	    	right_code = #{rightCode, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="seqNum !=null and seqNum != '' ">
+	    	seq_num = #{seqNum, jdbcType=NUMERIC},
+	    	</if>
+	    	<if test="remark !=null and remark != '' ">
+	    	remark = #{remark, jdbcType=VARCHAR},
+	    	</if>
+		</set>
+		 where module_id = #{moduleId, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 查看所有顶级模块-->
+	<select id="allParentModule" resultMap="SysModuleMap" parameterType="cn._2vin.admin.bean.SysModule">
+		select * from sys_module where parent_module_id=0
+		<if test="moduleName !=null and moduleName != '' ">
+	    	and module_name = #{moduleName, jdbcType=VARCHAR}
+	    </if>
+	    order by seq_num 
+	</select>
+	<!-- 查询系统模块 -->
+	<select id="queryList" resultMap="SysModuleMap" parameterType="cn._2vin.admin.bean.SysModule">
+		select * from sys_module where 1=1
+		<if test="moduleName !=null and moduleName != '' ">
+	    	and module_name = #{moduleName, jdbcType=VARCHAR}
+	    </if>
+	    order by seq_num 
+	</select>
+	
+  <!-- 查询模块父模块 -->
+  <select id="getSysModuleByParentModuleId" resultMap="SysModuleMap" parameterType="string"  >
+     SELECT t1.*
+	 FROM SYS_MODULE t1
+     WHERE t1.MODULE_ID = #{PARENT_MODULE_ID}
+  </select>
+  <!-- 查询模块子模块 -->
+  <select id="getChildrenSysModulesByModuleId" resultMap="SysModuleMap" parameterType="String">
+     SELECT t1.*
+	 FROM SYS_MODULE t1 where t1.parent_module_id=#{moduleId}
+	 order by seq_num
+  </select>
+  
+  <!--******************************************
+	 * 权限角色中间表
+	 ******************************************
+  -->
+  
+  <!-- 获取权限模块授权 -->
+  <select id="getSysModuleByRoleId" resultMap="SysModuleMap" parameterType="String">
+     SELECT m.*
+	 FROM SYS_MODULE m,(SELECT DISTINCT sys_right_id FROM sys_role_right WHERE sys_role_id=#{roleId, jdbcType=VARCHAR}) r 
+	 WHERE m.MODULE_ID=r.sys_right_id
+	 ORDER BY m.seq_num
+  </select>
+  <!-- 获取权限模块授权的所有列表（包含父模块，用于管理员登录后的模块显示） -->
+  <select id="getAllSysModuleByRoleId" resultMap="SysModuleMap" parameterType="String">
+  	SELECT * FROM sys_module m ,(
+	SELECT DISTINCT m.parent_module_id  AS module_id FROM (
+		SELECT parent_module_id FROM sys_module m,(SELECT DISTINCT sys_right_id FROM sys_role_right r WHERE sys_role_id=#{roleId, jdbcType=VARCHAR})r
+		WHERE m.MODULE_ID=r.sys_right_id
+	) m UNION ALL 
+	SELECT DISTINCT sys_right_id AS module_id FROM sys_role_right r WHERE sys_role_id=#{roleId, jdbcType=VARCHAR}
+	)r
+	WHERE m.MODULE_ID=r.module_id
+	ORDER BY m.seq_num
+  </select>
+  	
+  <!--插入权限角色中间表 insertRoleRightModule -->
+  <insert id="insertRoleRightModule" parameterType="map">
+  	insert into sys_role_right(sys_role_id,sys_right_id) 
+  	values(#{roleId, jdbcType=VARCHAR},#{rightId, jdbcType=VARCHAR});
+  </insert>
+  <!-- 删除权限角色中间表 by roleId -->
+  <delete id="deleteSysModuleByRoleId" parameterType="String">
+  	delete from sys_role_right where sys_role_id = #{roleId, jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 删除权限角色中间表 by rightId -->
+  <delete id="deleteSysModuleByRightId" parameterType="String">
+  	delete from sys_role_right where sys_right_id = #{rightId, jdbcType=VARCHAR}
+  </delete>
+</mapper>

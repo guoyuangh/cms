@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn._2vin.front.info.persistence.TestMapper">
+
+	<!-- 定义结果集 -->
+	<resultMap id="resultMap" autoMapping="true" type="cn._2vin.front.bean.TestBean">
+		<id property="id" column="id" jdbcType="VARCHAR"/>
+		<result property="name" column="name" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<!-- 新增 -->
+	<insert id="insertTest" parameterType="cn._2vin.front.bean.TestBean">
+	   insert into test(NAME) values (#{name, jdbcType=VARCHAR})
+	</insert>
+	
+	
+	<update id="updateTest" parameterType="cn._2vin.front.bean.TestBean">  
+    <![CDATA[ 
+     update test 
+     set 
+     name = #{name, jdbcType=VARCHAR} where id=#{id, jdbcType=VARCHAR}
+     ]]>
+	</update>
+	
+	
+	<delete id="deleteTest" parameterType="String">
+		delete from test where id=#{id,jdbcType=VARCHAR}
+	</delete>
+	<!-- 分页查询设备板卡记录 -->
+	<select id="selectPageTest" parameterType="cn._2vin.front.bean.TestBean" resultMap="resultMap">
+	    SELECT * FROM test t where 1=1 
+	    <if test="name !=null and name != '' ">
+	    	and t.name like '%${name}%'
+	    </if>
+	    order by t.id
+	    <include refid="cn._2vin.common.page.persistence.NumberMapper.Pageing" />	  
+	</select>
+	<!-- id -->
+	<select id="selectPrimaryKey" parameterType="java.lang.String" resultMap="resultMap">
+	    SELECT * FROM test t
+	    where t.id=#{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据条件查询设备板卡记录的总数 -->
+	<select id="countPageTest" parameterType="cn._2vin.front.bean.TestBean" resultType="int">
+        select count(1) from(
+         SELECT * FROM test t  where 1=1 
+	    <if test="name !=null and name != '' ">
+	    	and t.name like '%${name}%'
+	    </if>
+        ) t
+	</select>
+	
+</mapper>

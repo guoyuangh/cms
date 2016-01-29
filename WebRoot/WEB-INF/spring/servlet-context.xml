@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+		
+	<!-- 打开@PreFilter,@PreAuthorize, @PostFilter, @PostAuthorize等注解支持（注意：放在这里只会对Controller层的方法生效） -->
+	<!-- <security:global-method-security pre-post-annotations="enabled" /> -->
+	
+	<!-- 打开SpringMVC注解支持 -->
+	<mvc:annotation-driven validator="validator"/>
+
+	<!-- 当HTTP GET请求地址是/resources/**下的资源时候，不需要DispatchServlet处理，
+		直接转到 ${webappRoot}/resources目录下的资源，有利于提高静态资源访问效率 -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+	<mvc:resources mapping="/open/**" location="/open/" />
+	
+	<!-- 启动Spring MVC的注解功能，完成请求和注解POJO的映射    
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" >  
+	<property name="messageConverters">   
+	         <list>   
+	             <bean class = "org.springframework.http.converter.StringHttpMessageConverter">   
+	                <property name = "supportedMediaTypes">
+	                	<list>
+	                		<value>text/plain;charset=UTF-8</value>   
+	                     </list>   
+	                </property>   
+	             </bean>   
+	         </list>   
+	   </property>  
+	</bean>
+	 -->
+	<!-- 视图资源配置，处理控制器组件返回的view，自动加上前缀及后缀 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<!-- 扫描所有controller组件 -->
+	<context:component-scan base-package="cn._2vin.**.controller" />
+	
+	<!-- 配置web应用的默的视图为/open/forward.jsp -->
+	<mvc:view-controller path="/" view-name="/open/forward" />
+	
+	<!-- 国际化资源 -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="messages" />
+	</bean>
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>        
+
+    <!-- Enable file upload functionality -->
+    <bean id="multipartResolver"
+	    class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	    <!-- one of the properties available; the maximum file size in bytes (5M=5242880) -->
+	    <property name="maxUploadSize" value="5242880"/>
+	</bean>
+
+	<!-- 打开多语言动态支持 -->
+	<!-- <bean id="localeResolver"
+		class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+		<property name="defaultLocale" value="en" />
+	</bean> -->
+	
+	<bean id="localeResolver"
+      class="org.springframework.web.servlet.i18n.CookieLocaleResolver"/>
+	
+	<!-- 多个拦截器,顺序执行 -->
+ 	<mvc:interceptors>
+		<bean id="localeChangeInterceptor"
+			class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+			<property name="paramName" value="lang" />
+		</bean>
+		<!-- 管理员拦截器 -->  
+         <bean id="adminInterceptor" class="cn._2vin.common.base.interceptor.AdminInterceptor"></bean>  
+ 	</mvc:interceptors>
+ 	
+ 	<!-- 异常处理 -->
+ 	<bean id="exceptionResolver"
+	    class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	    <property name="defaultErrorView">
+	       <value>/open/common/500</value>
+	    </property>
+	 
+	    <property name="exceptionMappings">
+	       <props>
+	       		<!-- 用key作为名字进行异常匹配，key可以是异常的name，但不能使用通配符，值是异常转到的视图名，注意不是url！ -->
+	           <prop key="BissinessException">/open/common/bizError</prop>
+	           <prop key="cn._2vin.common.exception.NotRoleRightException">/open/common/notRoleRightError</prop>
+	           <prop key="AccessDeniedException">/open/common/403</prop>
+	           <prop key="java.lang.RuntimeException">/open/common/rtError</prop>
+	       </props>
+	    </property>
+	</bean>
+	
+	
+	<!-- Spring AOP 拦截器记录操作日志配置 
+	<bean name="logBefore" class="cn.tisson.ipran.common.log.advice.LogBeforeAdvice" />
+	<bean name="logAfter" class="cn.tisson.ipran.common.log.advice.LogAfterAdvice" />
+	<bean name="logThrows" class="cn.tisson.ipran.common.log.advice.LogThrowsAdvice" />
+	<bean name="loggerAutoProxy"
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+			<list>
+				<value>*Controller</value>
+			</list>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>logBefore</value>	 调用方法之前调用的拦截器
+				<value>logAfter</value>		 调用方法之后调用的拦截器，在方法抛出异常之后，logAfter拦截器将不会执行
+				
+				<value>logThrows</value>	调用方法抛出异常之后调用的拦截器
+			</list>
+		</property>
+	</bean>
+	-->
+</beans>

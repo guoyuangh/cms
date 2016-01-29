@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
+	<!--  Spring 服务层的配置文件 -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			/WEB-INF/spring/applicationContext.xml
+		</param-value>
+	</context-param>
+	<!--  Spring 容器启动监听器 -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>   
+	    <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>   
+	</listener>
+	<!-- Spring上下文获取工具类 -->
+	<listener>
+		<listener-class>cn._2vin.common.util.spring.SpringWebContextUtil</listener-class>
+	</listener>
+	<!-- 字符串 过滤器 --> 
+	<filter>
+		<filter-name>Set Character Encoding</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>Set Character Encoding</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- spring 全局过滤器 -->
+	<servlet>
+		<servlet-name>appServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/spring/servlet-context.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>appServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<!-- 管理员文件夹的 访问权限过滤器 
+	<filter>
+		<filter-name>adminIsLogin</filter-name>
+		<filter-class>cn._2vin.common.filter.AdminIsLoginFilter</filter-class>
+		admin管理员未登录时候转发的页面 -->
+		<!-- <init-param>
+			<param-name>doNotLoginPage</param-name>
+			<param-value>/login.do</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>adminIsLogin</filter-name>
+		<url-pattern>/admin/*</url-pattern>
+	</filter-mapping>
+	-->
+	
+	<error-page>
+		<error-code>404</error-code>
+		<location>/open/common/404.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/open/common/500.jsp</location>
+	</error-page>
+</web-app>

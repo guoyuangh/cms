@@ -1,0 +1,7 @@
+.pageContent span,.pageContent a {
+	float: left; padding-right: 4px;
+}
+.pageContent a{
+	color:blue !important;
+	cursor: pointer !important;
+}

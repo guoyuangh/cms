@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn._2vin.admin.role.persistence.SysRoleMapper">
+  <!-- 定义结果集 -->
+	<resultMap id="baseResultMap"  type="cn._2vin.admin.bean.SysRole">
+		<result property="roleId" column="role_id" jdbcType="VARCHAR"/>
+		<result property="roleCode" column="role_code" jdbcType="VARCHAR"/>
+		<result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+		<result property="remark" column="remark" jdbcType="VARCHAR"/>
+		<result property="arcDate" column="arcdate" jdbcType="TIMESTAMP"/>
+		<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	
+  	<delete id="delete" parameterType="string">
+  		delete from sys_role where role_id=#{roleId, jdbcType=VARCHAR}
+  	</delete>
+  	
+	<select id="selectPageSysRole" parameterType="cn._2vin.admin.bean.SysRole" resultMap="baseResultMap">
+	    SELECT * from sys_role t where 1=1 
+	    <if test="roleCode !=null and roleCode != '' ">
+	    	and t.role_code like '%${roleCode}%'
+	    </if>
+	     <if test="roleName !=null and roleName != '' ">
+	    	and t.role_name like '%${roleName}%'
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+	    order by t.role_id,t.role_code
+	    <include refid="cn._2vin.common.page.persistence.NumberMapper.Pageing" />	  
+	</select>
+	<select id="countPageSysRole" parameterType="cn._2vin.admin.bean.SysRole" resultType="int">
+        select count(1) from(
+	        SELECT role_id from sys_role t where 1=1 
+	     <if test="roleCode !=null and roleCode != '' ">
+	    	and t.role_code like '%${roleCode}%'
+	    </if>
+	     <if test="roleName !=null and roleName != '' ">
+	    	and t.role_name like '%${roleName}%'
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+        ) t
+	</select>
+	
+	<!-- 获取表中的最大值，新的id为最大值+1 getMaxRoleIdAdd1 -->
+	<select id="getMaxRoleIdAdd1"  resultType="int">
+		SELECT MAX(role_id)+1 FROM sys_role
+	</select>
+	
+	<select id="queryList" resultMap="baseResultMap" parameterType="cn._2vin.admin.bean.SysRole">
+		select * from sys_role where 1=1
+		<if test="roleCode !=null and roleCode != '' ">
+	    	and role_code = #{roleCode, jdbcType=VARCHAR}
+	    </if>
+	</select>
+	<select id="queryPrimaryKey" resultMap="baseResultMap" parameterType="java.lang.String">
+		select * from sys_role where role_id= #{roleId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectByNameExcludeId"  resultType="int" parameterType="java.util.Map">
+		select count(1) from sys_role where role_code = #{roleCode, jdbcType=VARCHAR}
+		<if test="roleId != null and roleId != '' ">
+		 and role_id <![CDATA[<>]]> #{roleId, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="cn._2vin.admin.bean.SysRole">
+		insert into sys_role (role_id,role_code,role_name,remark,arcdate) values(#{roleId, jdbcType=VARCHAR},#{roleCode, jdbcType=VARCHAR},#{roleName, jdbcType=VARCHAR},#{remark, jdbcType=VARCHAR},now())
+	</insert>
+	
+	<update id="update" parameterType="cn._2vin.admin.bean.SysRole">
+		update sys_role 
+		<set>
+			arcdate = NOW(),
+			<if test="roleCode !=null and roleCode != '' ">
+	    	role_code = #{roleCode, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="roleName !=null and roleName != '' ">
+	    	role_name = #{roleName, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="remark !=null and remark != '' ">
+	    	remark = #{remark, jdbcType=VARCHAR},
+	    	</if>
+		</set>
+		 where role_id = #{roleId, jdbcType=VARCHAR}
+	</update>
+</mapper>

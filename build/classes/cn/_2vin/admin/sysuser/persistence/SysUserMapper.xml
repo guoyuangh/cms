@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn._2vin.admin.sysuser.persistence.SysUserMapper">
+  <!-- 定义结果集 -->
+	<resultMap id="userResultMap"  type="cn._2vin.admin.bean.SysUser">
+		<result property="id" column="id" jdbcType="VARCHAR"/>
+		<result property="loginName" column="login_name" jdbcType="VARCHAR"/>
+		<result property="realName" column="real_name" jdbcType="VARCHAR"/>
+		<result property="loginPassword" column="login_paw" jdbcType="VARCHAR"/>
+		<result property="loginCount" column="login_count" jdbcType="BIGINT"/>
+		<result property="lastLoginDate" column="last_login_date" jdbcType="TIMESTAMP"/>
+		<result property="lastLoginIp" column="last_login_ip" jdbcType="VARCHAR"/>
+		<result property="arcDate" column="arcdate" jdbcType="TIMESTAMP"/>
+		<result property="crtDate" column="crtdate" jdbcType="TIMESTAMP"/>
+		<association  property="sysRole" javaType="cn._2vin.admin.bean.SysRole" >
+	    	<result property="roleId" column="role_id" jdbcType="VARCHAR"/>
+			<result property="roleCode" column="role_code" jdbcType="VARCHAR"/>
+			<result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+    	</association>
+	</resultMap>
+	
+  	<delete id="delete" parameterType="string">
+  		delete from sys_admin where id=#{id, jdbcType=VARCHAR}
+  	</delete>
+  	
+	<select id="selectPageSysUser" parameterType="cn._2vin.admin.bean.SysUser" resultMap="userResultMap">
+	     SELECT t.*,r.role_id,r.role_code,r.role_name FROM sys_admin t 
+ 		LEFT JOIN sys_role r ON t.ROLE_ID=r.role_id  
+ 		WHERE 1=1 
+	    <if test="loginName !=null and loginName != '' ">
+	    	and t.login_name like '%${loginName}%'
+	    </if>
+	     <if test="realName !=null and realName != '' ">
+	    	and t.real_name like '%${realName}%'
+	    </if>
+	    <if test="lastLoginIp !=null and lastLoginIp != '' ">
+	    	and t.last_login_ip like '%${lastLoginIp}%'
+	    </if>
+	    <if test="sysRole != null and sysRole.roleCode !=null and sysRole.roleCode != '' ">
+	    	and r.role_code = #{sysRole.roleCode}
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+	    order by r.role_code desc,t.login_name
+	    <include refid="cn._2vin.common.page.persistence.NumberMapper.Pageing" />	  
+	</select>
+	<select id="countPageSysUser" parameterType="cn._2vin.admin.bean.SysUser" resultType="int">
+        select count(1) from(
+	        SELECT id FROM sys_admin t 
+ 		LEFT JOIN sys_role r ON t.ROLE_ID=r.role_id  
+ 		WHERE 1=1 
+	    <if test="loginName !=null and loginName != '' ">
+	    	and t.login_name like '%${loginName}%'
+	    </if>
+	    <if test="realName !=null and realName != '' ">
+	    	and t.real_name like '%${realName}%'
+	    </if>
+	    <if test="lastLoginIp !=null and lastLoginIp != '' ">
+	    	and t.last_login_ip like '%${lastLoginIp}%'
+	    </if>
+	     <if test="sysRole != null and sysRole.roleCode !=null and sysRole.roleCode != '' ">
+	    	and r.role_code = #{sysRole.roleCode}
+	    </if>
+	    <if test="firstTime !=null and firstTime != '' ">
+	    	and t.crtdate > STR_TO_DATE(#{firstTime}, '%Y-%m-%d %H:%i')
+	    </if>
+	    <if test="lastTime !=null and lastTime != '' ">
+	    	<![CDATA[and t.crtdate < STR_TO_DATE(#{lastTime}, '%Y-%m-%d %H:%i')]]>
+	    </if>
+        ) t
+	</select>
+	
+	
+	<select id="queryList" resultMap="userResultMap" parameterType="cn._2vin.admin.bean.SysUser">
+		 SELECT t.*,r.role_id,r.role_code,r.role_name FROM sys_admin t 
+ 		LEFT JOIN sys_role r ON t.ROLE_ID=r.role_id  
+ 		WHERE 1=1
+		<if test="loginName !=null and loginName != '' ">
+	    	and login_name = #{loginName, jdbcType=VARCHAR}
+	    </if>
+	</select>
+	<select id="queryPrimaryKey" resultMap="userResultMap" parameterType="java.lang.String">
+		SELECT t.*,r.role_id,r.role_code,r.role_name FROM sys_admin t 
+ 		LEFT JOIN sys_role r ON t.ROLE_ID=r.role_id  
+ 		WHERE id= #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectByLoginNameExcludeId"  resultType="int" parameterType="java.util.Map">
+		select count(1) from sys_admin where login_name = #{loginName, jdbcType=VARCHAR}
+		<if test="id != null and id != '' ">
+		 and id <![CDATA[<>]]> #{id, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="cn._2vin.admin.bean.SysUser">
+		insert into sys_admin(login_name,real_name,login_paw,ROLE_ID,last_login_date,arcdate) values(#{loginName, jdbcType=VARCHAR},#{realName, jdbcType=VARCHAR},#{loginPassword, jdbcType=VARCHAR},#{sysRole.roleId, jdbcType=VARCHAR},now(),now())
+	</insert>
+	
+	<update id="update" parameterType="cn._2vin.admin.bean.SysUser">
+		update sys_admin 
+		<set>
+			arcdate = NOW(),
+			<if test="loginName !=null and loginName != '' ">
+	    	login_name = #{loginName, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="realName !=null and realName != '' ">
+	    	real_name = #{realName, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="loginPassword !=null and loginPassword != '' ">
+	    	login_paw = #{loginPassword, jdbcType=VARCHAR},
+	    	</if>
+	    	<if test="sysRole != null and sysRole.roleId !=null and sysRole.roleId != '' ">
+	    	ROLE_ID = #{sysRole.roleId, jdbcType=VARCHAR},
+	    	</if>
+		</set>
+		 where id = #{id, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="updateLoginAfter" parameterType="cn._2vin.admin.bean.SysUser">
+		update sys_admin set login_count = (login_count + 1),last_login_date=now(),last_login_ip=#{lastLoginIp, jdbcType=VARCHAR} where id = #{id, jdbcType=VARCHAR}
+	</update>
+	<update id="updatePassWord" parameterType="java.lang.String">
+		update sys_admin set login_paw = #{loginPassword, jdbcType=VARCHAR} where id = #{id, jdbcType=VARCHAR}
+	</update>
+</mapper>
